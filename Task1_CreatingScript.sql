@@ -2,8 +2,54 @@ IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'Shipment')
 BEGIN
     CREATE DATABASE Shipment;
 END
+GO
 
 USE Shipment;
+GO
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'State')
+BEGIN
+	  CREATE TABLE State (
+	  Id INT IDENTITY(1,1) NOT NULL,
+	  StateName VARCHAR(255) NOT NULL,
+	  PRIMARY KEY (Id)	  
+      );
+END;
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Place')
+BEGIN
+	  CREATE TABLE Place (
+	  Id INT IDENTITY(1,1) NOT NULL,
+	  PersonID INT, 
+	  StateId INT NOT NULL,
+	  PlaceCode  CHAR(2) NOT NULL,
+	  PRIMARY KEY (Id),
+	  FOREIGN KEY (StateId) REFERENCES State(Id)	
+      );
+END
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Warehouse')
+BEGIN
+	  CREATE TABLE Warehouse (
+	  Id DECIMAL(17, 14) NOT NULL,
+	  PlaceId INT,
+	  PRIMARY KEY (Id),
+	  FOREIGN KEY (PlaceId) REFERENCES Place(Id)
+      );
+END;
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Route')
+BEGIN	  
+	  CREATE TABLE Route (
+	  Id INT IDENTITY(1,1) NOT NULL,
+	  Distance DECIMAL(10, 2),
+	  OriginWaterhouseId DECIMAL(17, 14),
+	  DestinationWaterhouseId DECIMAL(17, 14),
+	  PRIMARY KEY (Id),
+	  FOREIGN KEY (OriginWaterhouseId) REFERENCES Warehouse(Id),
+	  FOREIGN KEY (DestinationWaterhouseId) REFERENCES Warehouse(Id)
+	  );
+END;
 
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Contact')
 BEGIN
@@ -14,21 +60,6 @@ BEGIN
 	  CellPhone CHAR(15) NOT NULL,
 	  PRIMARY KEY (Id),	  
       );
-END;
-
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Cargo')
-BEGIN
-	  CREATE TABLE Cargo (
-	  Id INT IDENTITY(1,1) ,
-	  Volume DECIMAL(10, 2),
-	  Weight DECIMAL(10, 2),
-	  RouteId INT,
-	  SenderContactId INT,
-	  RecipientContactId INT,
-	  PRIMARY KEY (Id),
-	  FOREIGN KEY (SenderContactId) REFERENCES Contact(id),
-	  FOREIGN KEY (RecipientContactId) REFERENCES Contact(id)
-	  );
 END;
 
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Driver')
@@ -68,27 +99,19 @@ BEGIN
       );
 END;
 
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Warehouse')
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Cargo')
 BEGIN
-	  CREATE TABLE Warehouse (
-	  Id INT IDENTITY(1,1) NOT NULL,
-	  PlaceId INT NOT NULL,
-	  PRIMARY KEY (Id)
-      );
-END;
-
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Route')
-BEGIN	  
-	  CREATE TABLE Route (
-	  Id INT IDENTITY(1,1) NOT NULL,
-	  Distance DECIMAL(10, 2),
-	  OriginWaterhouseId INT NOT NULL,
-	  DestinationWaterhouseId INT NOT NULL,
-	  CargoId INT,
+	  CREATE TABLE Cargo (
+	  Id INT IDENTITY(1,1) ,
+	  Volume DECIMAL(10, 2),
+	  Weight DECIMAL(10, 2),
+	  RouteId INT,
+	  SenderContactId INT,
+	  RecipientContactId INT,
 	  PRIMARY KEY (Id),
-	  FOREIGN KEY (CargoId) REFERENCES Cargo(Id),
-	  FOREIGN KEY (OriginWaterhouseId) REFERENCES Warehouse(Id),
-	  FOREIGN KEY (DestinationWaterhouseId) REFERENCES Warehouse(Id)
+	  FOREIGN KEY (SenderContactId) REFERENCES Contact(id),
+	  FOREIGN KEY (RouteId) REFERENCES Route(id),
+	  FOREIGN KEY (RecipientContactId) REFERENCES Contact(id)
 	  );
 END;
 
@@ -107,24 +130,3 @@ BEGIN
 	  FOREIGN KEY (CargoId) REFERENCES Cargo(Id)
 	  );
 END;
-
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'State')
-BEGIN
-	  CREATE TABLE State (
-	  Id INT IDENTITY(1,1) NOT NULL,
-	  StateName VARCHAR(255) NOT NULL,
-	  PRIMARY KEY (Id)	  
-      );
-END;
-
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Place')
-BEGIN
-	  CREATE TABLE Place (
-	  Id INT IDENTITY(1,1) NOT NULL,
-	  PersonID INT, 
-	  StateId INT NOT NULL,
-	  PlaceCode  CHAR(2) NOT NULL,
-	  PRIMARY KEY (Id),
-	  FOREIGN KEY (StateId) REFERENCES State(Id)	
-      );
-END
