@@ -1,9 +1,10 @@
 CREATE VIEW CityWithTruck AS
 SELECT
-    Route.OriginWaterhouseId,
-    Route.DestinationWaterhouseId,
-	Truck.Brand
+    r.OriginWaterhouseId,
+    r.DestinationWaterhouseId,
+	tr.Brand
 FROM
-    Route
-INNER JOIN
-    Truck ON Truck.Id = Route.Id;
+    Route r
+JOIN Shipment s ON r.Id = s.RouteId
+JOIN DriverTruck dt ON s.DriverTruckId = dt.DriverId
+JOIN Truck tr ON dt.TruckId = tr.Id;
