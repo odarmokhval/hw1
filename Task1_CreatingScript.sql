@@ -20,9 +20,9 @@ IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Place
 BEGIN
 	  CREATE TABLE Place (
 	  Id INT IDENTITY(1,1) NOT NULL,
-	  PersonID INT, 
+	  PlaceName  VARCHAR(255) NOT NULL,
 	  StateId INT NOT NULL,
-	  PlaceCode  CHAR(2) NOT NULL,
+	  PlaceCode  INT NOT NULL,
 	  PRIMARY KEY (Id),
 	  FOREIGN KEY (StateId) REFERENCES State(Id)	
       );
@@ -31,8 +31,10 @@ END
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Warehouse')
 BEGIN
 	  CREATE TABLE Warehouse (
-	  Id DECIMAL(17, 14) NOT NULL,
+	  Id INT NOT NULL,
 	  PlaceId INT,
+	  CityName VARCHAR(255) NOT NULL,
+	  StateName VARCHAR(255) NOT NULL,
 	  PRIMARY KEY (Id),
 	  FOREIGN KEY (PlaceId) REFERENCES Place(Id)
       );
@@ -42,9 +44,11 @@ IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Route
 BEGIN	  
 	  CREATE TABLE Route (
 	  Id INT IDENTITY(1,1) NOT NULL,
-	  Distance DECIMAL(10, 2),
-	  OriginWaterhouseId DECIMAL(17, 14),
-	  DestinationWaterhouseId DECIMAL(17, 14),
+	  OriginalStateId INT,
+	  OriginWaterhouseId INT,
+	  Distance FLOAT NOT NULL,
+	  DestinationStateId INT,	  
+	  DestinationWaterhouseId INT,
 	  PRIMARY KEY (Id),
 	  FOREIGN KEY (OriginWaterhouseId) REFERENCES Warehouse(Id),
 	  FOREIGN KEY (DestinationWaterhouseId) REFERENCES Warehouse(Id)
