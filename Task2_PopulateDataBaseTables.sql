@@ -1,4 +1,3 @@
-
 BULK INSERT DriverTruck
 FROM 'C:\Olga_folder\!Mentoring_2023\Course_application\Data\DataCSV\DriverTruck.csv'
 WITH
@@ -7,17 +6,9 @@ WITH
     FIELDTERMINATOR = ';', 
     ROWTERMINATOR = '\r'
 )
+
 BULK INSERT Driver
 FROM 'C:\Olga_folder\!Mentoring_2023\Course_application\Data\DataCSV\Drivers.csv'
-WITH
-(
-    FIRSTROW = 2,
-    FIELDTERMINATOR = ';', 
-    ROWTERMINATOR = '\r'
-)
-
-BULK INSERT Route
-FROM 'C:\Olga_folder\!Mentoring_2023\Course_application\Data\DataCSV\Route.csv'
 WITH
 (
     FIRSTROW = 2,
@@ -43,26 +34,38 @@ WITH
     ROWTERMINATOR = '\r'
 )
 
-BULK INSERT Place
-FROM 'C:\Olga_folder\!Mentoring_2023\Course_application\Data\DataCSV\Place.csv'
-WITH
-(
-    FIRSTROW = 2,
-    FIELDTERMINATOR = ';', 
-    ROWTERMINATOR = '\r'
-)
+-- Populating 'Place' and 'State' table using temporary table
+CREATE TABLE #PlaceState (
+    StateId INT,
+	StateName VARCHAR(255),
+	PlaceCode INT,
+	PlaceName VARCHAR(255)
+);
 
-BULK INSERT State
-FROM 'C:\Olga_folder\!Mentoring_2023\Course_application\Data\DataCSV\State.csv'
-WITH
-(
+-- Use BULK INSERT to insert data from the CSV file into the temporary table
+BULK INSERT #PlaceState
+FROM 'C:\Olga_folder\!Mentoring_2023\Course_application\Data\DataCSV\PlaceState.csv'
+WITH (
     FIRSTROW = 2,
-    FIELDTERMINATOR = ';', 
+    FIELDTERMINATOR = ';',
     ROWTERMINATOR = '\r'
-)
+);
+
+-- Insert data from the temporary table into Place table
+INSERT INTO Place (PlaceName, StateId, PlaceCode)
+SELECT PlaceName, StateId, PlaceCode
+FROM #PlaceState;
+
+-- Insert data from the temporary table into State table
+INSERT INTO State (StateName)
+SELECT StateName
+FROM #PlaceState;
+
+-- Clean up the temporary table
+DROP TABLE #PlaceState;
 
 BULK INSERT Warehouse
-FROM 'C:\Olga_folder\!Mentoring_2023\Course_application\Data\DataCSV\Warehouse.csv'
+FROM 'C:\Olga_folder\!Mentoring_2023\Course_application\Data\DataCSV\Warehouses.csv'
 WITH
 (
     FIRSTROW = 2,
@@ -70,11 +73,11 @@ WITH
     ROWTERMINATOR = '\r'
 )
 
---prefill Contact table before insert values in Cargo
+-- refill Contact table before insert values in Cargo
 INSERT INTO Contact (FirstName, LastName, CellPhone)
 VALUES ('JaneContact', 'Doe', '123-888-7890');
 
---Insert 10000 random values into Cargo table
+-- Insert 10000 random values into Cargo table
 SET IDENTITY_INSERT Cargo OFF;
 
 INSERT INTO Cargo (Volume, Weight, RouteId, SenderContactId, RecipientContactId)
@@ -103,7 +106,7 @@ FROM sys.objects AS o1
 CROSS JOIN sys.objects AS o2
 WHERE o1.object_id % 100 = 0; 
 
---Set Distance for each route as a random value between 100 and 3000
+-- Set Distance for each route as a random value between 100 and 3000
 -- Create a temporary table to store the random values
 CREATE TABLE #RandomValues (RandomValue DECIMAL(10, 2));
 
@@ -131,7 +134,7 @@ FROM CTE;
 DROP TABLE #RandomValues;
 
 
---Populate Route table with all possible pairs of warehouses
+-- Populate Route table with all possible pairs of warehouses
 CREATE TABLE #AllPairs (
     OriginWaterhouseId DECIMAL(17, 14),
     DestinationWaterhouseId DECIMAL(17, 14)
